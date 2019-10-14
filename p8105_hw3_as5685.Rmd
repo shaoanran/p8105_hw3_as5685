@@ -1,0 +1,183 @@
+---
+title: "p8105_hw3_as5685"
+output: github_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(p8105.datasets)
+```
+
+## load in "instatcart" dataset
+```{r}
+data("instacart")
+```
+
+## number of aisles and items ordered
+```{r}
+aisles_data = 
+instacart %>% 
+  group_by(aisle) %>% 
+  summarize(
+    aisle_number = n()
+  ) %>% 
+  filter(min_rank(desc(aisle_number)) < 2) %>% 
+  knitr::kable()
+```
+The number of aisles are 134. 
+Fresh vegatables is the  most item ordered from. 
+
+## plot for number of items ordered
+```{r}
+popularitem_plot = 
+    instacart %>% 
+      group_by(aisle) %>% 
+      summarize(
+      n = n()
+      ) %>% 
+    filter(n > 10000) %>% 
+    ggplot(aes(y = aisle, x = n)) +
+      geom_point()
+```
+
+## table showing three most popular items
+```{r}
+popularitem_data =
+  instacart %>% 
+   group_by(aisle, product_name) %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+  summarize(
+    product_order_number = n()
+  ) %>% 
+  filter(min_rank(desc(product_order_number)) < 4) %>% 
+  knitr::kable()
+```
+
+## mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
+```{r}
+meanhours_data = 
+instacart %>% 
+  group_by(product_name,order_dow) %>% 
+    filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  summarize(meanhours = mean(order_hour_of_day)) %>% 
+  pivot_wider(
+    names_from = "order_dow",
+    values_from = "meanhours"
+  ) %>% 
+knitr::kable(digits = 1) 
+```
+
+## Problem 2 
+## load and read in data "BRFSS"
+```{r}
+data("brfss_smart2010")
+```
+
+## data cleaning 
+```{r}
+brfss_dataclean = 
+  brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter(topic == "Overall Health") %>% 
+  filter(response %in% c("Excellent","Fair","Good","Poor","Very good")) %>% 
+  mutate(
+    response = factor(response, levels = c("Poor","Fair","Good","Very good","Excellent")) 
+    ) 
+```
+
+## states obseved at 7 or more.
+```{r}
+location_count_2002 = 
+brfss_dataclean %>% 
+   filter(year %in% c("2002","2010")) %>% 
+    group_by(year, locationabbr) %>%
+    summarize(
+      state_n = n(),
+      location_n = n_distinct(locationdesc)
+    ) %>% 
+  mutate(greatherthan7 = location_n >= 7) %>% 
+  filter(greatherthan7 == "TRUE")
+```
+In 2002, "NJ", "PA","NC", "MA", "FL","CT" is the state obeserved at 7 locations. In 2010, "CA","FL","CO","MA","MD","NC","NE","NJ","NY","OH","PA", "SC","TX","WA" are the states observed at 7 or more locations. 
+
+
+## spaghetti plot
+```{r}
+excellent_datasets = 
+  brfss_dataclean %>%
+  group_by(locationabbr,year) %>% 
+  filter(response == "Excellent") %>% 
+  mutate(
+    datavalue_mean = mean(data_value, na.rm = TRUE)
+  ) %>% 
+  select(year, locationabbr, datavalue_mean,response) %>% 
+  distinct()
+
+spaghetti_plot = 
+  ggplot(data = excellent_datasets, aes(x = year, y = datavalue_mean, color = locationabbr)) +
+  geom_line()
+```
+
+## two-panel plot
+```{r}
+plot = 
+  brfss_dataclean %>% 
+  filter(year %in% c("2006","2010"), locationabbr == "NY") %>% 
+  select(response,year,locationdesc,data_value) %>% 
+  ggplot(aes(x = data_value, fill = response)) + 
+    geom_density() +
+    facet_grid(.~locationdesc) 
+    #viridis::scale_fill_viridis(discrete = TRUE)
+```
+## problem 3
+
+## load, tidy and wrangle the data
+```{r}
+CHF_data = 
+  read_csv("./p8105_hw3_as5685_files/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  
+  mutate(
+    day = factor(day, levels = c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Sunday")),
+    weekday = day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday") 
+    ) %>% 
+    
+    select(week,day_id,day,weekday,everything()) %>% 
+      
+  pivot_longer(
+    activity_1:activity_1440, 
+    names_to = "activity_num",
+    values_to = "count_for_minute")
+```
+I used `pivot_longer` to organize the table. The variables are `week`, `day_id`, `day`, `weekday`, `activity number` and `count_for_minute`
+
+## aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals.
+```{r}
+totalactivity_data = 
+  CHF_data %>% 
+  group_by(day_id) %>% 
+  mutate(
+   day_total_activity = sum(count_for_minute)
+  ) %>% 
+  select(day_id,day_total_activity) %>% 
+  distinct()
+  knitr::kable
+```
+
+## single-panel plot
+```{r}
+activity_plot = 
+  CHF_data %>% 
+  ggplot(aes(x = week, y = count_for_minute, color = day)) +
+  geom_point() 
+```
+
+
+
+
+
+
+
+
+
+

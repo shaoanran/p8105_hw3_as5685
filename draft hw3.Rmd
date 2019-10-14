@@ -1,0 +1,199 @@
+---
+title: "p8105_hw3_as5685"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(p8105.datasets)
+```
+
+```{r}
+data("instacart")
+```
+
+## How many aisles are there, and which aisles are the most items ordered from?
+```{r}
+aisles_data = 
+instacart %>% 
+  group_by(aisle) %>% 
+  summarize(
+    aisle_number = n()
+  ) %>% 
+  filter(min_rank(desc(aisle_number)) < 2) %>% 
+  knitr::kable()
+```
+The number of aisles are 134. fresh vegatables is the  most item ordered from. 
+
+## Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered.
+
+Arrange aisles sensibly, and organize your plot so others can read it.
+```{r}
+popularitem_plot = 
+    instacart %>% 
+      group_by(aisle) %>% 
+      summarize(
+      n = n()
+      ) %>% 
+    filter(n > 10000) %>% 
+    ggplot(aes(y = aisle, x = n)) +
+      geom_point()
+```
+
+## Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+
+```{r}
+popularitem_data =
+  instacart %>% 
+   group_by(aisle, product_name) %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+  summarize(
+    product_order_number = n()
+  ) %>% 
+  filter(min_rank(desc(product_order_number)) < 4) %>% 
+  knitr::kable()
+```
+
+## Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+```{r}
+meanhours_data = 
+instacart %>% 
+  group_by(product_name,order_dow) %>% 
+    filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  summarize(meanhours = mean(order_hour_of_day)) %>% 
+  pivot_wider(
+    names_from = "order_dow",
+    values_from = "meanhours"
+  ) %>% view
+knitr::kable(digits = 1) 
+```
+
+## PROBLEM 2 
+## load and read in data
+```{r}
+data("brfss_smart2010")
+```
+
+## First, do some data cleaning:
+•	format the data to use appropriate variable names;
+•	focus on the “Overall Health” topic
+•	include only responses from “Excellent” to “Poor”
+•	organize responses as a factor taking levels ordered from “Poor” to “Excellent”
+Using this dataset, do or answer the following (commenting on the results of each):
+
+```{r}
+brfss_dataclean = 
+  brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter(topic == "Overall Health") %>% 
+  filter(response %in% c("Excellent","Fair","Good","Poor","Very good")) %>% 
+  mutate(
+    response = factor(response, levels = c("Poor","Fair","Good","Very good","Excellent")) 
+    ) 
+```
+##	In 2002, which states were observed at 7 or more locations? What about in 2010?
+```{r}
+location_count_2002 = 
+brfss_dataclean %>% 
+   filter(year %in% c("2002","2010")) %>% 
+    group_by(year, locationabbr) %>%
+    summarize(
+      state_n = n(),
+      location_n = n_distinct(locationdesc)
+    ) %>% 
+  mutate(greatherthan7 = location_n >= 7) %>% 
+  filter(greatherthan7 == "TRUE")
+```
+In 2002, "NJ", "PA","NC", "MA", "FL","CT" is the state obeserved at 7 locations. In 2010, "CA","FL","CO","MA","MD","NC","NE","NJ","NY","OH","PA", "SC","TX","WA" are the states observed at 7 or more locations. 
+
+## Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+```{r}
+excellent_datasets = 
+  brfss_dataclean %>%
+  group_by(locationabbr,year) %>% 
+  filter(response == "Excellent") %>% 
+  mutate(
+    datavalue_mean = mean(data_value, na.rm = TRUE)
+  ) %>% 
+  select(year, locationabbr, datavalue_mean,response) %>% 
+  distinct()
+
+spaghetti_plot = 
+  ggplot(data = excellent_datasets, aes(x = year, y = datavalue_mean, color = locationabbr)) +
+  geom_line()
+```
+
+## Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+```{r}
+plot = 
+  brfss_dataclean %>% 
+  filter(year %in% c("2006","2010"), locationabbr == "NY") %>% 
+  select(response,year,locationdesc,data_value) %>% 
+  ggplot(aes(x = data_value, fill = response)) + 
+    geom_density() +
+    facet_grid(.~locationdesc) 
+    #viridis::scale_fill_viridis(discrete = TRUE)
+```
+
+## PROBLEM 3
+This problem uses five weeks of accelerometer data collected on a 63 year-old male with BMI 25, who was admitted to the Advanced Cardiac Care Center of Columbia University Medical Center and diagnosed with congestive heart failure (CHF). The data can be downloaded here. In this spreadsheet, variables activity.* are the activity counts for each minute of a 24-hour day starting at midnight.
+
+## Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
+```{r}
+CHF_data = 
+  read_csv("./p8105_hw3_as5685_files/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  
+  mutate(
+    day = factor(day, levels = c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Sunday")),
+    weekday = day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday") 
+    ) %>% 
+    
+    select(week,day_id,day,weekday,everything()) %>% 
+      
+  pivot_longer(
+    activity_1:activity_1440, 
+    names_to = "activity_num",
+    values_to = "count_for_minute")
+```
+I used `pivot_longer` to organize the table. The variables are `week`, `day_id`, `day`, `weekday`, `activity number` and `count_for_minute`
+
+## Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+```{r}
+totalactivity_data = 
+  CHF_data %>% 
+  group_by(day_id) %>% 
+  mutate(
+   day_total_activity = sum(count_for_minute)
+  ) %>% 
+  select(day_id,day_total_activity) %>% 
+  distinct()
+  knitr::kable
+```
+## plot
+```{r}
+activity_plot = 
+  CHF_data %>% 
+  ggplot(aes(x = activity_num, y = count_for_minute, color = week)) +
+  geom_line() +
+  facet_grid(~week)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
