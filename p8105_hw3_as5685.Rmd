@@ -8,6 +8,9 @@ library(tidyverse)
 library(p8105.datasets)
 ```
 
+
+
+
 ## Load in "instatcart" dataset
 ```{r}
 data("instacart")
@@ -16,9 +19,15 @@ ncol(instacart)
 ```
 The size of table is `r nrow(instacart)` and `r ncol(instacart)`. 
 Each row in the dataset is a product from an order, and there is a single order per user. 
+
 `product_id` is the product identifier, each id is correspondent to unique product. For example, if we have the id "49302", we will know it is Bulgarian Yogurt in Yougurt aisle. 
+
 `product_name` and `aisle` indicate the name of specific product and which aisle it is placed in the grocery  which make easier for sorting them. such as Fresh Dill belongs to fresh herbs. 
+
 Some other variables such as `order_dow`. `order_hour_od_day` and `reordered` are helpful for staff to do some market research. 
+
+
+
 
 ## Number of aisles and items ordered
 ```{r}
@@ -33,6 +42,9 @@ instacart %>%
 ```
 The number of aisles are `r nrow(aisles_data)`. 
 Fresh vegatables is the aisle that most item ordered from. 
+
+
+
 
 ## Plot for number of items ordered
 ```{r}
@@ -52,6 +64,12 @@ popularitem_plot =
         caption = "Data from Instacart"
       )
 ```
+Among the aisles with more than 10000 orders, fresh vegatables and fresh fruits are the most popular aisles. 
+
+oils, vinegars or butter aisle is least popular among the list. 
+
+
+
 
 ## Table showing three most popular items in each aisle 
 ```{r}
@@ -67,9 +85,15 @@ popularitem_data =
   knitr::kable()
 popularitem_data 
 ```
+The most populat three items in `packaged vegetabels fruits` are `organic baby spinach` with 9784 ordered, `organic raspberreis` with 5546 ordered, and `organic blueberries` with 4966 ordered. 
 
-The most popular three items in `baking ingredients` are `Cane Sugar` with 336 ordered, `Light Brown Sugar` with 499 ordered and `Pure Baking Soda` with 387 ordered. 
-The most popular three items in `dog food care` are `rganix Chicken & Brown Rice Recipe` with 28 ordered `Small dog biscuits`with  `Snack Sticks Chicken & Rice Recipe Dog Treats`
+The most popular three items in `baking ingredients` are `Cane Sugar` with 336 ordered, `Light Brown Sugar` with 499 ordered and `Pure Baking Soda` with 387 
+ordered. 
+
+The most popular three items in `dog food care` are `organix Chicken & Brown Rice Recipe` with 28 ordered `Small dog biscuits`with 26 ordered `Snack Sticks Chicken & Rice Recipe Dog Treats` with 30 ordered. 
+
+
+
 
 
 ## Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
@@ -86,12 +110,20 @@ instacart %>%
 knitr::kable(digits = 1) 
 meanhours_data
 ```
+For coffee Ice Cream, on order_dow0 and order_dow6 has the lowest mean of order hour of the day. 
+
+For Pink Lady Apples, the lowest mean of order hour of the day is order_dow1. Details have been shown in above table. 
+
+
 
 ## Problem 2 
-## load and read in data "BRFSS"
+## Load and read in data "BRFSS"
 ```{r}
 data("brfss_smart2010")
 ```
+
+
+
 
 ## data cleaning 
 ```{r}
@@ -104,6 +136,9 @@ brfss_dataclean =
     response = factor(response, levels = c("Poor","Fair","Good","Very good","Excellent")) 
     ) 
 ```
+
+
+
 
 ## states obseved at 7 or more.
 ```{r}
@@ -118,7 +153,10 @@ brfss_dataclean %>%
   mutate(greatherthan7 = location_n >= 7) %>% 
   filter(greatherthan7 == "TRUE")
 ```
-In 2002, "NJ", "PA","NC", "MA", "FL","CT" is the state obeserved at 7 locations. In 2010, "CA","FL","CO","MA","MD","NC","NE","NJ","NY","OH","PA", "SC","TX","WA" are the states observed at 7 or more locations. 
+
+In 2002, "NJ", "PA","NC", "MA", "FL","CT" is the state obeserved at 7 locations. 
+
+In 2010, "CA","FL","CO","MA","MD","NC","NE","NJ","NY","OH","PA", "SC","TX","WA" are the states observed at 7 or more locations. 
 
 
 ## spaghetti plot
@@ -135,10 +173,18 @@ excellent_datasets =
 
 spaghetti_plot = 
   ggplot(data = excellent_datasets, aes(x = year, y = datavalue_mean, color = locationabbr)) +
-  geom_line()
+  geom_line() +
+  labs(
+    title = "Mean of data value for Excellent across locations within a state",
+    y = "Mean of data value",
+    caption = "data from BRFSS"
+  )
 ```
 
-## two-panel plot
+Based on the dataset and plot, it can be found that the trends of mean of data values for excellence across the year are different for each states. Most them have lower mean in 2010 than 2002. 
+
+
+## Two-panel plots for 2006 and 2010(poor to excellent)
 ```{r}
 plot = 
   brfss_dataclean %>% 
@@ -146,11 +192,16 @@ plot =
   select(response,year,locationdesc,data_value) %>% 
   ggplot(aes(x = data_value, fill = response)) + 
     geom_density() +
-    facet_grid(.~locationdesc) 
-    #viridis::scale_fill_viridis(discrete = TRUE)
+    facet_grid(.~year) +
+    viridis::scale_fill_viridis(discrete = TRUE)
 ```
-## problem 3
+QUESTIONS: DO WE NEED TO INCLUDE LOCATIONS????
 
+*** adding labels****************
+**************************************************REMEMBER!!!!!!!!!
+
+
+## problem 3
 ## load, tidy and wrangle the data
 ```{r}
 CHF_data = 
@@ -171,6 +222,10 @@ CHF_data =
 ```
 I used `pivot_longer` to organize the table. The variables are `week`, `day_id`, `day`, `weekday`, `activity number` and `count_for_minute`
 
+
+
+
+
 ## aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals.
 ```{r}
 totalactivity_data = 
@@ -183,6 +238,12 @@ totalactivity_data =
   distinct()
   knitr::kable
 ```
+
+
+
+
+
+
 
 ## single-panel plot
 ```{r}
