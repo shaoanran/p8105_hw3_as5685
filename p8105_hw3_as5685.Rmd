@@ -12,7 +12,7 @@ library(ggridges)
 
 
 
-## Load in "instatcart" dataset
+### Load in "instatcart" dataset
 ```{r}
 data("instacart")
 nrow(instacart)
@@ -30,7 +30,7 @@ Some other variables such as `order_dow`. `order_hour_od_day` and `reordered` ar
 
 
 
-## Number of aisles and items ordered
+### Number of aisles and items ordered
 ```{r}
 aisles_data = 
 instacart %>% 
@@ -48,7 +48,7 @@ Fresh vegatables is the aisle that most item ordered from.
 
 
 
-## Plot for number of items ordered
+### Plot for number of items ordered
 ```{r}
 popularitem_plot = 
     instacart %>% 
@@ -74,7 +74,7 @@ oils, vinegars or butter aisle is least popular among the list.
 
 
 
-## Table showing three most popular items in each aisle 
+### Table showing three most popular items in each aisle 
 ```{r}
 popularitem_data =
   instacart %>% 
@@ -101,7 +101,7 @@ The most popular three items in `dog food care` are `organix Chicken & Brown Ric
 
 
 
-## Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
+### Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
 ```{r}
 meanhours_data = 
 instacart %>% 
@@ -188,7 +188,9 @@ spaghetti_plot =
 spaghetti_plot
 ```
 
-Based on the dataset and plot, it can be found that the trends of mean of data values for excellence across the year are different for each states. Most them have lower mean in 2010 than 2002. 
+Based on the dataset and plot, it can be found that the trends of mean of data values for excellence across the year are different for each states. 
+
+Most them have lower mean in 2010 than 2002. 
 
 
 ### Two-panel plots for 2006 and 2010(poor to excellent)
@@ -209,6 +211,10 @@ plot
     
 The distribution of "poor" and "very good" are similar between 2006 and 2010 in NY
 . The value range for fair in 2010 is larger than 2006. For "Very good" and "Excellent", the mean value is larger in 2010 than 2006. 
+
+
+
+
 
 ## problem 3
 ### load, tidy and wrangle the data
@@ -237,7 +243,7 @@ In the new dataset, the number of observation is `r nrow(CHF_data)` and `r ncol(
 
 
 
-### aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals.
+### Aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals.
 ```{r}
 totalactivity_data = 
   CHF_data %>% 
@@ -255,7 +261,8 @@ totalactivity_data
 There is no apparent trend across the 35 days. Overall, the activity counts are similar for each weekend, and relatively lower at the mid-week. 
 
 
-### single-panel plot
+
+### Single-panel plot
 ```{r}
 activity_plot = 
   CHF_data %>% 
