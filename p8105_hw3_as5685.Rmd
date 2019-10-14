@@ -8,12 +8,19 @@ library(tidyverse)
 library(p8105.datasets)
 ```
 
-## load in "instatcart" dataset
+## Load in "instatcart" dataset
 ```{r}
 data("instacart")
+nrow(instacart)
+ncol(instacart)
 ```
+The size of table is `r nrow(instacart)` and `r ncol(instacart)`. 
+Each row in the dataset is a product from an order, and there is a single order per user. 
+`product_id` is the product identifier, each id is correspondent to unique product. For example, if we have the id "49302", we will know it is Bulgarian Yogurt in Yougurt aisle. 
+`product_name` and `aisle` indicate the name of specific product and which aisle it is placed in the grocery  which make easier for sorting them. such as Fresh Dill belongs to fresh herbs. 
+Some other variables such as `order_dow`. `order_hour_od_day` and `reordered` are helpful for staff to do some market research. 
 
-## number of aisles and items ordered
+## Number of aisles and items ordered
 ```{r}
 aisles_data = 
 instacart %>% 
@@ -24,36 +31,48 @@ instacart %>%
   filter(min_rank(desc(aisle_number)) < 2) %>% 
   knitr::kable()
 ```
-The number of aisles are 134. 
-Fresh vegatables is the  most item ordered from. 
+The number of aisles are `r nrow(aisles_data)`. 
+Fresh vegatables is the aisle that most item ordered from. 
 
-## plot for number of items ordered
+## Plot for number of items ordered
 ```{r}
 popularitem_plot = 
     instacart %>% 
       group_by(aisle) %>% 
       summarize(
-      n = n()
+      order_amount = n()
       ) %>% 
-    filter(n > 10000) %>% 
-    ggplot(aes(y = aisle, x = n)) +
-      geom_point()
+    filter(order_amount > 10000) %>% 
+    ggplot(aes(y = aisle, x = order_amount)) +
+      geom_point() +
+      labs(
+        title = "number of items ordered from aisles with more than 10000 items",
+        y = "Aisle Name",
+        x = "Order Amount",
+        caption = "Data from Instacart"
+      )
 ```
 
-## table showing three most popular items
+## Table showing three most popular items in each aisle 
 ```{r}
 popularitem_data =
   instacart %>% 
    group_by(aisle, product_name) %>% 
   filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
   summarize(
-    product_order_number = n()
+    product_order_amount = n()
   ) %>% 
-  filter(min_rank(desc(product_order_number)) < 4) %>% 
+  filter(min_rank(desc(product_order_amount)) < 4) %>% 
+  arrange(desc(product_order_amount)) %>% 
   knitr::kable()
+popularitem_data 
 ```
 
-## mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
+The most popular three items in `baking ingredients` are `Cane Sugar` with 336 ordered, `Light Brown Sugar` with 499 ordered and `Pure Baking Soda` with 387 ordered. 
+The most popular three items in `dog food care` are `rganix Chicken & Brown Rice Recipe` with 28 ordered `Small dog biscuits`with  `Snack Sticks Chicken & Rice Recipe Dog Treats`
+
+
+## Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
 ```{r}
 meanhours_data = 
 instacart %>% 
@@ -65,6 +84,7 @@ instacart %>%
     values_from = "meanhours"
   ) %>% 
 knitr::kable(digits = 1) 
+meanhours_data
 ```
 
 ## Problem 2 
