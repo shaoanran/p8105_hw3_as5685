@@ -248,13 +248,18 @@ In the new dataset, the number of observation is `r nrow(CHF_data)` and `r ncol(
 ```{r}
 totalactivity_data = 
   CHF_data %>% 
-  group_by(day_id) %>% 
-  mutate(
+  group_by(week, day) %>% 
+  summarize(
    day_total_activity = sum(count_for_minute)
   ) %>% 
-  select(day_id,day, day_total_activity) %>% 
-  distinct() %>% 
+  select(day, week, day_total_activity) %>% 
+  
+  pivot_wider(
+    values_from = "day_total_activity",
+    names_from = "day"
+  ) %>% 
   knitr::kable()
+  
 totalactivity_data
 ```
 
