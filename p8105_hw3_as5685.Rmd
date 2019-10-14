@@ -123,6 +123,7 @@ For Pink Lady Apples, the lowest mean of order hour of the day is order_dow1. De
 
 
 ## Problem 2 
+
 ### Load and read in data "BRFSS"
 ```{r}
 data("brfss_smart2010")
@@ -195,16 +196,17 @@ Most them have lower mean in 2010 than 2002.
 
 ### Two-panel plots for 2006 and 2010(poor to excellent)
 ```{r}
+library(ggplot2)
 plot = 
   brfss_dataclean %>% 
   filter(year %in% c("2006","2010"), locationabbr == "NY") %>% 
   select(response,year,locationdesc,data_value) %>% 
-  ggplot(aes(x = data_value,y = response, fill = response, alpha = 0.5)) + 
-    geom_density_ridges() +
-    facet_grid(.~year) +
-    viridis::scale_fill_viridis(discrete = TRUE) +
+  ggplot(aes(x = locationdesc, y = data_value, fill = response)) +
+  geom_bar(stat = "identity", position = "fill") + 
+  facet_grid(~year) +
+  coord_flip()  +
   labs(
-    title = "Distribution of datavalues for each response in 2006 and 2010"
+    title = "Distribution of datavalues for each response in 2006 and 2010 among locations in NY" 
   )
 plot 
 ```
@@ -220,13 +222,13 @@ The distribution of "poor" and "very good" are similar between 2006 and 2010 in 
 ### load, tidy and wrangle the data
 ```{r}
 CHF_data = 
-  read_csv("./p8105_hw3_as5685_files/accel_data.csv") %>% 
+  read_csv("./p8105_hw3_as5685_files/data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
   
   mutate(
     day = factor(day, levels = c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Sunday")),
     weekday_or_weekend = ifelse(day %in% c("Saturday", "Sunday"), "weekend", "weekday")
-  ) %>% 
+  ) %>%  
     select(week,day_id,day,weekday_or_weekend,everything()) %>% 
       
   pivot_longer(
@@ -251,27 +253,23 @@ totalactivity_data =
   mutate(
    day_total_activity = sum(count_for_minute)
   ) %>% 
-  select(day_id,day_total_activity) %>% 
+  select(day_id,day, day_total_activity) %>% 
   distinct() %>% 
   knitr::kable()
 totalactivity_data
-
 ```
 
-There is no apparent trend across the 35 days. Overall, the activity counts are similar for each weekend, and relatively lower at the mid-week. 
-
+There is no apparent trend across the 35 days. Overall, the activity counts are few for each weekend, and relatively lower at the mid-week. 
 
 
 ### Single-panel plot
 ```{r}
 activity_plot = 
   CHF_data %>% 
-  ggplot(aes(x = week, y = count_for_minute, color = day)) +
-  geom_point()
-activity_plot
+  ggplot(aes(x = activity_num, y = count_for_minute, group = day_id, color = day)) +
+  geom_line()
+  activity_plot 
 ```
-
-TOTAL ACTIVITY EACH DAY or ACITIVITY COUNT PER MINUTES. 
 
 
 
